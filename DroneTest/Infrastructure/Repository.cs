@@ -20,7 +20,7 @@ namespace DroneTest.Infrastructure
             dbSet = context.Set<TEntity>();
         }
 
-        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> filter = null, string includeProperties = "")
+        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>>? filter = null, string includeProperties = "")
         {
             IQueryable<TEntity> query = dbSet;
             if (filter != null)
@@ -31,7 +31,7 @@ namespace DroneTest.Infrastructure
             return query.ToList();
         }
 
-        public TEntity FindOne(Expression<Func<TEntity, bool>> filter = null)
+        public TEntity FindOne(Expression<Func<TEntity, bool>>? filter = null)
         {
             IQueryable<TEntity> query = dbSet;
             if (filter != null)
