@@ -1,4 +1,5 @@
 ﻿using DroneCore.Entities;
+using DroneTest.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DroneTest.Infrastructure
@@ -17,7 +18,7 @@ namespace DroneTest.Infrastructure
         public DbSet<Drone> Drone { get; set; }
         public DbSet<Medication> Medication { get; set; }
         public DbSet<Delivery> Delivery { get; set; }
-        public DbSet<DeliveryDetail> DeliveryDetail { get; set; }
+        public DbSet<DeliveryDetailModel> DeliveryDetail { get; set; }
 
     }
 }

@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace DroneCore.UseCase
 {
-    public class UCMedication
+    public class MedicationUC
     {
         private IUnitOfWork _unitOfWork;
 
-        public UCMedication(IUnitOfWork unitOfWork)
+        public MedicationUC(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

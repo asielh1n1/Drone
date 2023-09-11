@@ -10,45 +10,43 @@ namespace DroneTest.Infrastructure
 {
     public class UnitOfWork : IUnitOfWork
     {
-        public IRepository<Drone> Drone { get; set; }
-        public IRepository<Medication> Medication { get; set; }
-        public IRepository<Delivery> Delivery { get; set; }
-        public IRepository<DeliveryDetail> DeliveryDetail { get; set; }
+		public IDroneRepository Drone { get; set; }
+		public IRepository<Medication> Medication { get; set; }
+		public IRepository<Delivery> Delivery { get; set; }
 
-        private ApplicationDbContext _context;
+		private ApplicationDbContext _context;
 
-        public UnitOfWork(ApplicationDbContext context)
-        {
-            _context = context;
-            Drone = new Repository<Drone>(context);
-            Medication = new Repository<Medication>(context);
-            Delivery = new Repository<Delivery>(context);
-            DeliveryDetail = new Repository<DeliveryDetail>(context);
-        }
+		public UnitOfWork(ApplicationDbContext context)
+		{
+			_context = context;
+			Drone = new DroneRepository(context);
+			Medication = new Repository<Medication>(context);
+			Delivery = new Repository<Delivery>(context);
+		}
 
-        public async Task Save()
-        {
-            await _context.SaveChangesAsync();
-        }
+		public void Save()
+		{
+			_context.SaveChanges();
+		}
 
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
+		public void Dispose()
+		{
+			_context.Dispose();
+		}
 
-        public void BeginTransaction()
-        {
-            _context.Database.BeginTransaction();
-        }
+		public void BeginTransaction()
+		{
+			_context.Database.BeginTransaction();
+		}
 
-        public void CommitTransaction()
-        {
-            _context.Database.CommitTransaction();
-        }
+		public void CommitTransaction()
+		{
+			_context.Database.CommitTransaction();
+		}
 
-        public void RollbackTransaction()
-        {
-            _context.Database.RollbackTransaction();
-        }
-    }
+		public void RollbackTransaction()
+		{
+			_context.Database.RollbackTransaction();
+		}
+	}
 }

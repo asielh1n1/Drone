@@ -14,13 +14,13 @@ namespace DroneCore.Interfaces
         /// </summary>
         /// <param name="filter">Search term</param>
         /// <returns>Returns a list elements</returns>
-        public IEnumerable<T> Find(Expression<Func<T, bool>>? filter = null, string includeProperties = "");
+        public IEnumerable<T> Find();
         /// <summary>
         /// Search for an element given a search term
         /// </summary>
         /// <param name="filter">Search term</param>
         /// <returns>Return element</returns>
-        public T FindOne(Expression<Func<T, bool>>? filter = null);
+        public T FindOne(string id);
         /// <summary>
         /// Add element
         /// </summary>

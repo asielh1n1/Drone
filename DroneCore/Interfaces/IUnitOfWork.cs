@@ -9,11 +9,10 @@ namespace DroneCore.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        public IRepository<Drone> Drone { get; }
+        public IDroneRepository Drone { get; }
         public IRepository<Medication> Medication { get; }
         public IRepository<Delivery> Delivery { get; }
-        public IRepository<DeliveryDetail> DeliveryDetail { get; }
-        public Task Save();
+        public void Save();
         public void BeginTransaction();
         public void CommitTransaction();
         public void RollbackTransaction();

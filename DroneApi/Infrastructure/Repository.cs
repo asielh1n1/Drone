@@ -6,8 +6,8 @@ namespace DroneApi.Infrastructure
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        private ApplicationDbContext _context;
-        private DbSet<TEntity> dbSet;
+        protected ApplicationDbContext _context;
+        protected DbSet<TEntity> dbSet;
 
         public Repository(ApplicationDbContext context)
         {
@@ -15,37 +15,27 @@ namespace DroneApi.Infrastructure
             dbSet = context.Set<TEntity>();
         }
 
-        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>>? filter = null, string includeProperties = "")
+        public virtual IEnumerable<TEntity> Find()
         {
-            IQueryable<TEntity> query = dbSet;
-            if (filter != null)
-                query = query.Where(filter);
-
-            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                query = query.Include(includeProperty);
-            return query.ToList();
+            return dbSet.ToList();
         }
 
-        public TEntity FindOne(Expression<Func<TEntity, bool>>? filter = null)
+        public virtual TEntity FindOne(string id)
         {
-            IQueryable<TEntity> query = dbSet;
-            if (filter != null)
-                query = query.Where(filter);
-
-            return query.FirstOrDefault(filter);
+            return dbSet.Find(id);
         }
 
-        public void Add(TEntity entity)
+        public virtual void Add(TEntity entity)
         {
             dbSet.Add(entity);
         }
 
-        public void Update(TEntity entity)
+        public virtual void Update(TEntity entity)
         {
             dbSet.Update(entity);
         }
 
-        public void Remove(TEntity entity)
+        public virtual void Remove(TEntity entity)
         {
             dbSet.Remove(entity);
         }

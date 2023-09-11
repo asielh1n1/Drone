@@ -9,23 +9,23 @@ namespace DroneCore.Entities
 {
     public class Medication
     {
-        public Medication()
+		public string Id { get; set; }
+		public string Name { get; set; }
+		public int Weight { get; set; }
+		public string Code { get; set; }
+		public string? Image { get; set; }
+		public Medication()
         {
         }
 
         public Medication(string name, int weight, string code, string? image)
         {
+            Id = Guid.NewGuid().ToString();
             Name = name;
             Weight = weight;
             Code = code;
             Image = image;
         }
-
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int Weight { get; set; }
-        public string Code { get; set; }
-        public string? Image { get; set; }
 
         /// <summary>
         /// Validate the name of the drug

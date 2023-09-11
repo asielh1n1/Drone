@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace DroneCore.UseCase
 {
-    public class UCDrone
+    public class DroneUC
     {
         private IUnitOfWork _unitOfWork;
 
-        public UCDrone(IUnitOfWork unitOfWork)
+        public DroneUC(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -50,44 +50,28 @@ namespace DroneCore.UseCase
             _unitOfWork.Drone.Add(drone);
             _unitOfWork.Save();
             return drone;
-
         }
-        /// <summary>
-        /// Loading a drone with medication items
-        /// </summary>
-        /// <param name="droneId">Drone identifier</param>
-        /// <param name="medications">List of medicines</param>
-        /// <exception cref="Exception"></exception>
-        public void LoadDrone(int droneId, int [] medicationsId)
+		/// <summary>
+		/// Loading a drone with medication items
+		/// </summary>
+		/// <param name="drone"></param>
+		/// <param name="medications"></param>
+		/// <exception cref="DroneException"></exception>
+		public void LoadDrone(Drone drone, List<Medication>medications)
         {
-            Drone drone = _unitOfWork.Drone.FindOne(x => x.Id == droneId);
+            Drone droneModel = _unitOfWork.Drone.FindOne(drone.Id);
             if(drone == null)
                 throw new DroneException("The drone was not found");
-            List<Medication> medications = _unitOfWork.Medication.Find(x => medicationsId.Any(y => y == x.Id)).ToList();
-            if(medications.Count == 0 || medications.Count != medicationsId.Length)
+            if (medications.Sum(x => x.Weight) > droneModel.LimitWeight)
                 throw new DroneException("The weight of the medicines exceeds the limit allowed for the drone");
-            if (medications.Sum(x => x.Weight) > drone.LimitWeight)
-                throw new DroneException("The weight of the medicines exceeds the limit allowed for the drone");
-            if (drone.BatteryCapacity<25)
+            if (droneModel.BatteryCapacity<25)
                 throw new DroneException("Impossible to load the drone with medicines, the battery is less than 25%.");
-            var deliveryId = Guid.NewGuid();
-            _unitOfWork.Delivery.Add(new Delivery()
-            {
-                Id = deliveryId,
-                CreatedDate = DateTime.Now,
-                DroneId = droneId,
-                State = Constants.DeliveryState.LOADING,
-            });
-            foreach (var item in medications)
-            {
-                _unitOfWork.DeliveryDetail.Add(new DeliveryDetail()
-                {
-                    DeliveryId = deliveryId,
-                    MedicationId = item.Id,
-                });
-            }
-            drone.State = Constants.DeliveryState.LOADING;
-            drone.CurrentDelivery = deliveryId;
+            var delivery = new Delivery(droneModel, medications);
+            _unitOfWork.Delivery.Add(delivery);
+			droneModel.State = Constants.DeliveryState.LOADING;
+			// You specified the identifier of the current delivery
+			droneModel.CurrentDelivery = delivery.Id;
+            _unitOfWork.Drone.Update(droneModel);
             _unitOfWork.Save();
         }
         /// <summary>
@@ -96,16 +80,15 @@ namespace DroneCore.UseCase
         /// <param name="droneId">Drone identifier</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public List<Medication> MedicationLoad(int droneId)
+        public List<Medication> MedicationLoad(Drone drone)
         {
-            Drone drone = _unitOfWork.Drone.FindOne(x => x.Id == droneId);
-            if (drone == null)
+            Drone droneModel = _unitOfWork.Drone.FindOne(drone.Id);
+            if (droneModel == null)
                 throw new DroneException("The drone was not found");
-            if (drone.State == Constants.DroneState.IDLE)
+            if (droneModel.State == Constants.DroneState.IDLE)
                 throw new DroneException("The drone is not loaded with medicines");
-            List<DeliveryDetail> deliveryDetails = _unitOfWork.DeliveryDetail.Find(x => x.DeliveryId == drone.CurrentDelivery).ToList();
-            List<Medication> medications = _unitOfWork.DeliveryDetail.Find(x => x.DeliveryId == drone.CurrentDelivery, "Medication").Select(x => x.Medication).ToList();
-            return medications;
+			Delivery delivery = _unitOfWork.Delivery.FindOne(droneModel.CurrentDelivery);
+            return delivery.Medications;
         }
         /// <summary>
         /// Checking available drones for loading
@@ -113,7 +96,7 @@ namespace DroneCore.UseCase
         /// <returns></returns>
         public List<Drone> DronesAvailable()
         {
-            return  _unitOfWork.Drone.Find(x => x.State == Constants.DroneState.IDLE).ToList();
+            return  _unitOfWork.Drone.Find(Constants.DroneState.IDLE);
         }
         /// <summary>
         /// Check drone battery level for a given drone;
@@ -121,12 +104,12 @@ namespace DroneCore.UseCase
         /// <param name="droneId">Drone identifier</param>
         /// <returns></returns>
         /// <exception cref="DroneException"></exception>
-        public int BatteryLevel(int droneId)
+        public int BatteryLevel(Drone drone)
         {
-            Drone drone = _unitOfWork.Drone.FindOne(x => x.Id == droneId);
-            if (drone == null)
+            Drone droneModel = _unitOfWork.Drone.FindOne(drone.Id);
+            if (droneModel == null)
                 throw new DroneException("The drone was not found");
-            return drone.BatteryCapacity;
+            return droneModel.BatteryCapacity;
         }
     }
 }

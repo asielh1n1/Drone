@@ -1,29 +1,28 @@
-﻿using DroneCore.Entities;
+﻿using DroneApi.Models;
+using DroneCore.Entities;
 using DroneCore.Interfaces;
 
 namespace DroneApi.Infrastructure
 {
     public class UnitOfWork : IUnitOfWork
     {
-        public IRepository<Drone> Drone { get; set; }
+        public IDroneRepository Drone { get; set; }
         public IRepository<Medication> Medication { get; set; }
         public IRepository<Delivery> Delivery { get; set; }
-        public IRepository<DeliveryDetail> DeliveryDetail { get; set; }
 
         private ApplicationDbContext _context;
 
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
-            Drone = new Repository<Drone>(context);
+            Drone = new DroneRepository(context);
             Medication = new Repository<Medication>(context);
             Delivery = new Repository<Delivery>(context);
-            DeliveryDetail = new Repository<DeliveryDetail>(context);
         }
 
-        public async Task Save()
+        public void Save()
         {
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public void Dispose()

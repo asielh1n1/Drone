@@ -12,8 +12,8 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                Drone drone = UCDrone.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                Drone drone = DroneUC.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
                 Assert.NotNull(drone);
             }
         }
@@ -33,8 +33,8 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                Assert.Throws<DroneException>(() => UCDrone.Add(serialNumber, model, limitWeight, batteryCapacity, state));
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                Assert.Throws<DroneException>(() => DroneUC.Add(serialNumber, model, limitWeight, batteryCapacity, state));
             }
 
         }
@@ -44,18 +44,18 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                UCMedication UCMedication = new UCMedication(_unitOfWork);
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                MedicationUC MedicationUC = new MedicationUC(_unitOfWork);
                 List<Medication> medications = new List<Medication>()
                 {
-                    UCMedication.Add("Simvastatina",100,"sim",""),
-                    UCMedication.Add("Aspirina",100,"asp",""),
-                    UCMedication.Add("Omeprazol",100,"ome",""),
+                    MedicationUC.Add("Simvastatina",100,"sim",""),
+                    MedicationUC.Add("Aspirina",100,"asp",""),
+                    MedicationUC.Add("Omeprazol",100,"ome",""),
                 };
-                Drone drone = UCDrone.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
+                Drone drone = DroneUC.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
                 try
                 {
-                    UCDrone.LoadDrone(drone.Id, medications.Select(x=>x.Id).ToArray());
+                    DroneUC.LoadDrone(new Drone() { Id = drone.Id }, medications);
                     Assert.True(true);
                 }
                 catch (Exception)
@@ -73,16 +73,16 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                UCMedication UCMedication = new UCMedication(_unitOfWork);
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                MedicationUC MedicationUC = new MedicationUC(_unitOfWork);
                 List<Medication> medications = new List<Medication>()
                 {
-                    UCMedication.Add("Simvastatina",100,"sim",""),
-                    UCMedication.Add("Aspirina",100,"asp",""),
-                    UCMedication.Add("Omeprazol",200,"ome",""),
+                    MedicationUC.Add("Simvastatina",100,"sim",""),
+                    MedicationUC.Add("Aspirina",100,"asp",""),
+                    MedicationUC.Add("Omeprazol",200,"ome",""),
                 };
-                Drone drone = UCDrone.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
-                Assert.Throws<DroneException>(() => UCDrone.LoadDrone(drone.Id, medications.Select(x => x.Id).ToArray()));
+                Drone drone = DroneUC.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
+                Assert.Throws<DroneException>(() => DroneUC.LoadDrone(drone, medications));
             }
         }
 
@@ -91,17 +91,17 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                UCMedication UCMedication = new UCMedication(_unitOfWork);
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                MedicationUC MedicationUC = new MedicationUC(_unitOfWork);
                 List<Medication> medications = new List<Medication>()
                 {
-                    UCMedication.Add("Simvastatina",100,"sim",""),
-                    UCMedication.Add("Aspirina",100,"asp",""),
-                    UCMedication.Add("Omeprazol",100,"ome",""),
+                    MedicationUC.Add("Simvastatina",100,"sim",""),
+                    MedicationUC.Add("Aspirina",100,"asp",""),
+                    MedicationUC.Add("Omeprazol",100,"ome",""),
                 };
-                Drone drone = UCDrone.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
-                UCDrone.LoadDrone(drone.Id, medications.Select(x => x.Id).ToArray());
-                List<Medication> medications2 = UCDrone.MedicationLoad(drone.Id);
+                Drone drone = DroneUC.Add("BT308", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
+                DroneUC.LoadDrone(drone, medications);
+                List<Medication> medications2 = DroneUC.MedicationLoad(drone);
                 Assert.Equal(3, medications2.Count);
             }
         }
@@ -111,11 +111,11 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                UCDrone.Add("BT306", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
-                UCDrone.Add("BT307", Constants.DroneModel.Heavyweight, 300, 75, Constants.DroneState.LOADED);
-                UCDrone.Add("BT308", Constants.DroneModel.Lightweight, 300, 75, Constants.DroneState.IDLE);
-                List<Drone> availableDrones = UCDrone.DronesAvailable();
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                DroneUC.Add("BT306", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
+                DroneUC.Add("BT307", Constants.DroneModel.Heavyweight, 300, 75, Constants.DroneState.LOADED);
+                DroneUC.Add("BT308", Constants.DroneModel.Lightweight, 300, 75, Constants.DroneState.IDLE);
+                List<Drone> availableDrones = DroneUC.DronesAvailable();
                 Assert.Equal(2, availableDrones.Count);
             }
         }
@@ -125,9 +125,9 @@ namespace DroneTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCDrone UCDrone = new UCDrone(_unitOfWork);
-                Drone drone = UCDrone.Add("BT306", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
-                int levelBattery = UCDrone.BatteryLevel(drone.Id);
+                DroneUC DroneUC = new DroneUC(_unitOfWork);
+                Drone drone = DroneUC.Add("BT306", Constants.DroneModel.Middleweight, 300, 75, Constants.DroneState.IDLE);
+                int levelBattery = DroneUC.BatteryLevel(new Drone() { Id = drone.Id });
                 Assert.Equal(75, levelBattery);
             }
         }

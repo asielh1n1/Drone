@@ -12,8 +12,8 @@ namespace MedicationTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCMedication UCMedication = new UCMedication(_unitOfWork);
-                Medication medication = UCMedication.Add("Simvastatina", 100, "sim", "");
+                MedicationUC MedicationUC = new MedicationUC(_unitOfWork);
+                Medication medication = MedicationUC.Add("Simvastatina", 100, "sim", "");
                 Assert.NotNull(medication);
             }
         }
@@ -27,8 +27,8 @@ namespace MedicationTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCMedication UCMedication = new UCMedication(_unitOfWork);
-                Assert.Throws<DroneException>(() => UCMedication.Add(name, weight, code, image));
+                MedicationUC MedicationUC = new MedicationUC(_unitOfWork);
+                Assert.Throws<DroneException>(() => MedicationUC.Add(name, weight, code, image));
             }
 
         }
@@ -38,11 +38,11 @@ namespace MedicationTest.Test
         {
             using (var _unitOfWork = new UnitOfWork(new ApplicationDbContext()))
             {
-                UCMedication UCMedication = new UCMedication(_unitOfWork);
-                UCMedication.Add("Simvastatina", 100, "sim", "");
-                UCMedication.Add("Aspirina", 100, "asp", "");
-                UCMedication.Add("Omeprazol", 100, "ome", "");
-                List<Medication> list = UCMedication.List();
+                MedicationUC MedicationUC = new MedicationUC(_unitOfWork);
+                MedicationUC.Add("Simvastatina", 100, "sim", "");
+                MedicationUC.Add("Aspirina", 100, "asp", "");
+                MedicationUC.Add("Omeprazol", 100, "ome", "");
+                List<Medication> list = MedicationUC.List();
                 Assert.Equal(3, list.Count);
             }
         }

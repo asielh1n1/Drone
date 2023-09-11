@@ -1,4 +1,5 @@
 ﻿using DroneApi.Infrastructure;
+using DroneApi.Models;
 using DroneCore.Entities;
 
 namespace DroneApi.Util
@@ -31,8 +32,8 @@ namespace DroneApi.Util
                     }
 
                 }
-                // Only 10 second test, so that the changes can be seen
-                await Task.Delay(TimeSpan.FromSeconds(int.Parse(Configuration["TimeCheckDroneBattery"])), stoppingToken);
+                // Only 5 minutes test, so that the changes can be seen
+                await Task.Delay(TimeSpan.FromSeconds(int.Parse(Configuration["TimeCheckDroneBattery"])), stoppingToken);                
             }
             
         }

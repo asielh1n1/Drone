@@ -2,8 +2,8 @@
 {
     public class LoadingDrone
     {
-        public int droneId { get; set; }
-        public int [] medications { get; set; }
+        public string droneId { get; set; }
+        public string [] medications { get; set; }
     }
 
     public class RegisterDrone

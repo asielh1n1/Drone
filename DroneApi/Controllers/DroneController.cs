@@ -13,11 +13,13 @@ namespace DroneApi.Controllers
     public class DroneController : ControllerBase
     {
         private readonly ILogger _logger;
-        private UCDrone _UCDrone;
+        private DroneUC _DroneUC;
+        private MedicationUC _MedicationUC;
         public DroneController(IUnitOfWork unitWork, ILogger<DroneController> logger)
         {
             _logger = logger;
-            _UCDrone = new UCDrone(unitWork);
+            _DroneUC = new DroneUC(unitWork);
+			_MedicationUC = new MedicationUC(unitWork);
         }
         /// <summary>
         /// List models drones
@@ -26,9 +28,9 @@ namespace DroneApi.Controllers
 
         [HttpGet]
         [Route("drone-models")]
-        public ApiResult DroneModels()
+        public ActionResult<ApiResult> DroneModels()
         {
-            return new ApiResult(Constant.ApiResult.Success,typeof(Constants.DroneModel).GetAllPublicConstantValues<string>());
+            return ApiResult.Success(typeof(Constants.DroneModel).GetAllPublicConstantValues<string>());
         }
 
         /// <summary>
@@ -37,9 +39,9 @@ namespace DroneApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("drone-states")]
-        public ApiResult DroneStates()
+        public ActionResult<ApiResult> DroneStates()
         {
-            return new ApiResult(Constant.ApiResult.Success, typeof(Constants.DroneState).GetAllPublicConstantValues<string>());
+            return ApiResult.Success(typeof(Constants.DroneState).GetAllPublicConstantValues<string>());
         }
 
         /// <summary>
@@ -48,9 +50,9 @@ namespace DroneApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("drone-list")]
-        public ApiResult DroneList()
+        public ActionResult<ApiResult> DroneList()
         {
-            return new ApiResult(Constant.ApiResult.Success, _UCDrone.ListDrone());
+            return ApiResult.Success(_DroneUC.ListDrone());
         }
 
         /// <summary>
@@ -60,22 +62,21 @@ namespace DroneApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("register-drone")]
-        public ApiResult RegisterDrone(RegisterDrone drone)
+        public ActionResult<ApiResult> RegisterDrone(RegisterDrone drone)
         {
             try
             {
-                Drone drone1 = _UCDrone.Add(drone.SerialNumber, drone.Model, drone.LimitWeight, drone.BatteryCapacity,drone.State);
-                return new ApiResult(Constant.ApiResult.Success, drone1);
+                Drone drone1 = _DroneUC.Add(drone.SerialNumber, drone.Model, drone.LimitWeight, drone.BatteryCapacity,drone.State);
+                return ApiResult.Success(drone1);
             }
             catch (DroneException e)
             {
-                HttpContext.Response.StatusCode = Constant.StatusCode.Error;
-                return new ApiResult(Constant.ApiResult.Error, e.Message);
+                return BadRequest(ApiResult.Error(ApiResult.ApiResultStatus.Error, e.Message));
             }
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
+                return ApiResult.FatalError();
             }
         }
 
@@ -87,23 +88,26 @@ namespace DroneApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("loading-drone")]
-        public ApiResult LoadingDrone(LoadingDrone loadingDrone)
+        public ActionResult<ApiResult> LoadingDrone(LoadingDrone loadingDrone)
         {
             try
             {
-                _UCDrone.LoadDrone(loadingDrone.droneId, loadingDrone.medications);
-                return new ApiResult(Constant.ApiResult.Success, null);
+                List<Medication> medications = _MedicationUC.List().Where(x=>loadingDrone.medications.Any(y=> y==x.Id)).ToList();
+                _DroneUC.LoadDrone(
+                    new Drone() { Id = loadingDrone.droneId },
+					medications
+				);
+                return ApiResult.Success();
             }
             catch (DroneException e)
             {
-                HttpContext.Response.StatusCode = Constant.StatusCode.Error;
-                return new ApiResult(Constant.ApiResult.Error, e.Message);
-            }
+				return BadRequest(ApiResult.Error(ApiResult.ApiResultStatus.Error, e.Message));
+			}
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
-            }
+				return ApiResult.FatalError();
+			}
         }
 
         /// <summary>
@@ -114,23 +118,22 @@ namespace DroneApi.Controllers
 
         [HttpGet]
         [Route("checking-loaded-medication")]
-        public ApiResult CheckingLoadedMedication(int droneId)
+        public ActionResult<ApiResult> CheckingLoadedMedication(string droneId)
         {
             try
             {
-                List<DroneCore.Entities.Medication> medications = _UCDrone.MedicationLoad(droneId);
-                return new ApiResult(Constant.ApiResult.Success, medications);
+                List<DroneCore.Entities.Medication> medications = _DroneUC.MedicationLoad( new Drone() { Id = droneId });
+                return ApiResult.Success(medications);
             }
             catch (DroneException e)
             {
-                HttpContext.Response.StatusCode = Constant.StatusCode.Error;
-                return new ApiResult(Constant.ApiResult.Error, e.Message);
-            }
+				return BadRequest(ApiResult.Error(ApiResult.ApiResultStatus.Error, e.Message));
+			}
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
-            }
+				return ApiResult.FatalError();
+			}
         }
 
         /// <summary>
@@ -140,23 +143,22 @@ namespace DroneApi.Controllers
 
         [HttpGet]
         [Route("checking-available-drones")]
-        public ApiResult CheckingAvailableDrones()
+        public ActionResult<ApiResult> CheckingAvailableDrones()
         {
             try
             {
-                List<Drone> drones = _UCDrone.DronesAvailable();
-                return new ApiResult(Constant.ApiResult.Success, drones);
+                List<Drone> drones = _DroneUC.DronesAvailable();
+                return ApiResult.Success(drones);
             }
             catch (DroneException e)
             {
-                HttpContext.Response.StatusCode = Constant.StatusCode.Error;
-                return new ApiResult(Constant.ApiResult.Error, e.Message);
-            }
+				return BadRequest(ApiResult.Error(ApiResult.ApiResultStatus.Error, e.Message));
+			}
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
-            }
+				return ApiResult.FatalError();
+			}
         }
 
         /// <summary>
@@ -166,23 +168,22 @@ namespace DroneApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("check-drone-battery")]
-        public ApiResult CheckDroneBattery(int droneId)
+        public ActionResult<ApiResult> CheckDroneBattery(string droneId)
         {
             try
             {
-                int batteryLevel = _UCDrone.BatteryLevel(droneId);
-                return new ApiResult(Constant.ApiResult.Success, new { batteryLevel= batteryLevel });
+                int batteryLevel = _DroneUC.BatteryLevel(new Drone() { Id = droneId });
+                return ApiResult.Success(new { batteryLevel });
             }
             catch (DroneException e)
             {
-                HttpContext.Response.StatusCode = Constant.StatusCode.Error;
-                return new ApiResult(Constant.ApiResult.Error, e.Message);
-            }
+				return BadRequest(ApiResult.Error(ApiResult.ApiResultStatus.Error, e.Message));
+			}
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
-            }
+				return ApiResult.FatalError();
+			}
         }
     }
 }

@@ -13,11 +13,11 @@ namespace DroneApi.Controllers
     public class MedicationController : ControllerBase
     {
         private readonly ILogger _logger;
-        private UCMedication _UCMedication;
+        private MedicationUC _MedicationUC;
         public MedicationController(IUnitOfWork unitWork, ILogger<MedicationController> logger)
         {
             _logger = logger;
-            _UCMedication = new UCMedication(unitWork);
+            _MedicationUC = new MedicationUC(unitWork);
         }
         /// <summary>
         /// Add a new medication
@@ -27,23 +27,22 @@ namespace DroneApi.Controllers
 
         [HttpPost]
         [Route("add")]
-        public ApiResult RegisterMedication(RegisterMedication medication)
+        public ActionResult<ApiResult> RegisterMedication(RegisterMedication medication)
         {
             try
             {
-                Medication medication1 = _UCMedication.Add(medication.Name, medication.Weight, medication.Code, medication.Image);
-                return new ApiResult(Constant.ApiResult.Success, medication1);
+                Medication medication1 = _MedicationUC.Add(medication.Name, medication.Weight, medication.Code, medication.Image);
+                return ApiResult.Success(medication1);
             }
             catch (DroneException e)
             {
-                HttpContext.Response.StatusCode = Constant.StatusCode.Error;
-                return new ApiResult(Constant.ApiResult.Error, e.Message);
-            }
+				return BadRequest(ApiResult.Error(ApiResult.ApiResultStatus.Error, e.Message));
+			}
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
-            }
+				return ApiResult.FatalError();
+			}
         }
 
         /// <summary>
@@ -56,14 +55,14 @@ namespace DroneApi.Controllers
         {
             try
             {
-                List<Medication> medications = _UCMedication.List();
-                return new ApiResult(Constant.ApiResult.Success, medications);
+                List<Medication> medications = _MedicationUC.List();
+                return ApiResult.Success(medications);
             }
             catch (Exception e)
             {
                 _logger.LogError("An error occurred. {0}. {1}", e.Message, e.StackTrace);
-                return new ApiResult(Constant.ApiResult.Error, Constant.FatalError);
-            }
+				return ApiResult.FatalError();
+			}
         }
     }
 }
